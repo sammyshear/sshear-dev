@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Sammy Shear</title>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="static/css/index.css" rel="stylesheet">
+		<link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.2/dist/terminal.min.css" />
+		<script src="static/js/htmx.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+	</head>
+	<body>
+		<header>
+			<hgroup x-data="{
+                    text: '',
+                    textArray : ['Sammy Shear', 'Developer', 'Blogger'],
+                    textIndex: 0,
+                    charIndex: 0,
+                    pauseEnd: 1000,
+                    pauseStart: 20,
+                    typeSpeed: 125,
+                    direction: 'forward'
+                 }" 
+x-init="(() => {
+	let typingInterval = setInterval(type, $data.typeSpeed);
+
+	function type() {
+		let current = $data.textArray[$data.textIndex];
+		if ($data.charIndex > current.length) {
+			$data.direction = 'backward';
+			clearInterval(typingInterval);
+			setTimeout(function() {
+				typingInterval = setInterval(type, $data.typeSpeed);
+			}, $data.pauseEnd);
+		}
+
+		$data.text = current.substring(0, $data.charIndex);
+		if ($data.direction == 'forward') {
+			$data.charIndex++;
+		} else {
+			if ($data.charIndex == 0) {
+				$data.direction = 'forward';
+				clearInterval(typingInterval);
+				setTimeout(function() {
+					$data.textIndex++;
+					if ($data.textIndex >= $data.textArray.length) {
+						$data.textIndex = 0;
+					}
+
+					typingInterval = setInterval(type, $data.typeSpeed);
+				}, $data.pauseStart);
+			}
+			$data.charIndex--;
+		}
+	}
+})();"
+				class="typer">
+				<h1>sshear@dev</h1>
+				<h1 class="logo terminal-prompt" x-text="text"></h1>
+			</hgroup>
+			<nav class="terminal-menu">
+				<ul>
+					<li>
+						<a href="/static" class="menu-item active">Blog</a>
+					</li>
+					<li>
+						<a href="/static/portfolio" class="menu-item">Portfolio</a>
+					</li>
+				</ul>
+			</nav>
+		</header>
+		<main>
+			<section hx-get="/api/posts" hx-trigger="load" hx-target="#postBox", hx-include="[name='post_box']">
+				<div x-data="{ posts: [] }" x-model="post_box" name="post_box" id="postBox">
+					<template x-for="post in posts">
+						<div class="terminal-card">
+							<header x-text="post.title"></header>
+							<div x-text="post.bodyPrev"></div>
+						</div>
+					</template>
+				</div>
+			<section>
+		</main>
+	</body>
+</html>
