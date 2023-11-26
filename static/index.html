@@ -8,19 +8,27 @@
 		<link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.2/dist/terminal.min.css" />
 		<script src="static/js/htmx.min.js"></script>
 		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+		<script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+		<script type="application/javascript">
+			let data = { posts: [{}] };
+			let reactivePosts;
+			document.addEventListener("alpine:init", () => {
+				reactivePosts = Alpine.reactive(data);
+			});
+		</script>
 	</head>
-	<body>
-		<header>
+	<body class="terminal">
+		<header class="container">
 			<hgroup x-data="{
-                    text: '',
-                    textArray : ['Sammy Shear', 'Developer', 'Blogger'],
-                    textIndex: 0,
-                    charIndex: 0,
-                    pauseEnd: 1000,
-                    pauseStart: 20,
-                    typeSpeed: 125,
-                    direction: 'forward'
-                 }" 
+			text: '',
+			textArray : ['Sammy Shear', 'Developer', 'Blogger'],
+			textIndex: 0,
+			charIndex: 0,
+			pauseEnd: 1000,
+			pauseStart: 20,
+			typeSpeed: 125,
+			direction: 'forward'
+                }" 
 x-init="(() => {
 	let typingInterval = setInterval(type, $data.typeSpeed);
 
@@ -61,25 +69,34 @@ x-init="(() => {
 			<nav class="terminal-menu">
 				<ul>
 					<li>
-						<a href="/static" class="menu-item active">Blog</a>
+						<a href="#" class="menu-item active">Blog</a>
 					</li>
 					<li>
-						<a href="/static/portfolio" class="menu-item">Portfolio</a>
+						<a href="#portfolio" class="menu-item">Portfolio</a>
 					</li>
 				</ul>
 			</nav>
 		</header>
-		<main>
-			<section hx-get="/api/posts" hx-trigger="load" hx-target="#postBox", hx-include="[name='post_box']">
-				<div x-data="{ posts: [] }" x-model="post_box" name="post_box" id="postBox">
-					<template x-for="post in posts">
-						<div class="terminal-card">
-							<header x-text="post.title"></header>
-							<div x-text="post.bodyPrev"></div>
+		<main class="container">
+			<section x-data x-on:htmx:after-swap="reactivePosts.posts = JSON.parse($event.detail.xhr.response)" hx-get="/api/posts" hx-trigger="load" hx-swap="none" id="postSection" class="card-grid">
+				<template x-for="post in reactivePosts.posts" :key="post.id">
+					<div class="terminal-card">
+						<header x-text="post.title" style=""></header>
+						<div>
+							<span x-text="post.body_prev"></span> <a href="#" @click="reactivePosts.curPost = post.id; reactivePosts.open = !reactivePosts.open">Read more...</a>
+							<template x-if="reactivePosts.curPost === post.id && reactivePosts.open">
+								<pre x-text="post.body"></pre>
+							</template>
 						</div>
-					</template>
-				</div>
-			<section>
+					</div>
+				</template>
+			</section>
 		</main>
+		<section id="portfolio" class="container terminal-timeline">
+			<div class="terminal-card">
+				<header>This Site</header>
+				<div>Stack: HTMX + AlpineJS + Rust + Actix-Web. <a href="https://github.com/sammyshear/sshear-dev">GitHub</a></div>
+			</div>
+		</section>
 	</body>
 </html>

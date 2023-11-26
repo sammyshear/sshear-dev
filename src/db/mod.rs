@@ -1,8 +1,11 @@
 pub mod db {
-    use libsql_client::Value;
+    use std::time::{SystemTime, UNIX_EPOCH};
+    use serde::{Deserialize, Serialize};
+
+    use libsql_client::{Value, Statement, args};
 
     pub async fn query_posts(client: libsql_client::client::Client) -> Vec<Post> {
-        let res = client.execute("SELECT id, bodyPrev, body, createdAt FROM posts ORDER BY createdAt DESC").await;
+        let res = client.execute("SELECT id, bodyPrev, body, createdAt, title FROM posts ORDER BY createdAt DESC").await;
         let rs = res.unwrap();
 
         let mut posts: Vec<Post> = vec![];
@@ -10,6 +13,7 @@ pub mod db {
         for row in rs.rows {
             let mut post: Post = Post {
                 id: 0,
+                title: "".into(),
                 body_prev: "".into(),
                 body: "".into(),
                 created_at: 0,
@@ -17,34 +21,42 @@ pub mod db {
             let id_val = &row.values[0];
             match id_val {
                 Value::Integer { value } => post.id = *value,
-                Value::Null => todo!(),
-                Value::Text { value: _ } => todo!(),
-                Value::Blob { value: _} => todo!(),
-                Value::Float { value: _} => todo!(), 
+                Value::Null => post.id = 0,
+                Value::Text { value: _ } => panic!(),
+                Value::Blob { value: _} => panic!(),
+                Value::Float { value: _} => panic!(), 
             }
             let bp_val = &row.values[1];
             match bp_val {
-                Value::Integer { value: _ } => todo!(),
-                Value::Null => todo!(),
+                Value::Integer { value: _ } => panic!(),
+                Value::Null => panic!(),
                 Value::Text { value } => post.body_prev = <String as Into<Box<str>>>::into(value.to_string()),
-                Value::Blob { value: _} => todo!(),
-                Value::Float { value: _} => todo!(),
+                Value::Blob { value: _} => panic!(),
+                Value::Float { value: _} => panic!(),
             }
             let b_val = &row.values[2];
             match b_val {
-                Value::Integer { value: _ } => todo!(),
-                Value::Null => todo!(),
+                Value::Integer { value: _ } => panic!(),
+                Value::Null => panic!(),
                 Value::Text { value } => post.body = <String as Into<Box<str>>>::into(value.to_string()),
-                Value::Blob { value: _} => todo!(),
-                Value::Float { value: _} => todo!(),
+                Value::Blob { value: _} => panic!(),
+                Value::Float { value: _} => panic!(),
             }
-            let ca_val = &row.values[0];
+            let t_val = &row.values[4];
+            match t_val {
+                Value::Integer { value: _ } => panic!(),
+                Value::Null => panic!(),
+                Value::Text { value } => post.title = <String as Into<Box<str>>>::into(value.to_string()),
+                Value::Blob { value: _} => panic!(),
+                Value::Float { value: _} => panic!(),
+            }
+            let ca_val = &row.values[3];
             match ca_val {
                 Value::Integer { value } => post.created_at = *value,
-                Value::Null => todo!(),
-                Value::Text { value: _ } => todo!(),
-                Value::Blob { value: _} => todo!(),
-                Value::Float { value: _} => todo!(), 
+                Value::Null => panic!(),
+                Value::Text { value: _ } => panic!(),
+                Value::Blob { value: _} => panic!(),
+                Value::Float { value: _} => panic!(), 
             }
             posts.push(post);
         }
@@ -52,11 +64,24 @@ pub mod db {
         return posts;
     }
 
-    #[derive(Debug)]
+    pub async fn insert_post(post: PostPayload, client: libsql_client::client::Client) {
+        let _ = client.execute(Statement::with_args("INSERT INTO posts (bodyPrev, body, createdAt, title) VALUES (?, ?, ?, ?)", 
+            args!(post.body_prev, post.body,
+            SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as i64, post.title))).await;
+    }
+
+    #[derive(Serialize, Deserialize, Debug)]
     pub struct Post {
         id: i64,
+        title: Box<str>,
         body_prev: Box<str>,
         body: Box<str>,
         created_at: i64
+    }
+    #[derive(Deserialize, Serialize, Debug)]
+    pub struct PostPayload {
+        title: String,
+        body_prev: String,
+        body: String
     }
 }
