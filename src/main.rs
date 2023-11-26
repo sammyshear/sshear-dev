@@ -37,6 +37,6 @@ async fn insert_new_post(mut payload: web::Payload) -> Result<HttpResponse, erro
 #[actix_web::main]
 async fn main() -> std::io::Result<()>{
     HttpServer::new(|| {
-        App::new().service(fs::Files::new("/static", "static").index_file("index.html")).service(web::scope("/api").service(get_posts).service(insert_new_post))
+        App::new().service(web::scope("/api").service(get_posts).service(insert_new_post)).service(fs::Files::new("/", "static").index_file("index.html"))
     }).bind(("127.0.0.1", 8080))?.run().await
 }
