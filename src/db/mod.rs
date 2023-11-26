@@ -65,6 +65,9 @@ pub mod db {
     }
 
     pub async fn insert_post(post: PostPayload, client: libsql_client::client::Client) {
+        if post.auth_key != env!("LIBSQL_CLIENT_TOKEN") { 
+            return
+        }
         let _ = client.execute(Statement::with_args("INSERT INTO posts (bodyPrev, body, createdAt, title) VALUES (?, ?, ?, ?)", 
             args!(post.body_prev, post.body,
             SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as i64, post.title))).await;
@@ -82,6 +85,7 @@ pub mod db {
     pub struct PostPayload {
         title: String,
         body_prev: String,
-        body: String
+        body: String,
+        auth_key: String
     }
 }

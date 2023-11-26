@@ -31,7 +31,7 @@ async fn insert_new_post(mut payload: web::Payload) -> Result<HttpResponse, erro
     }
     let post_obj = serde_json::from_slice::<PostPayload>(&body).unwrap();
     insert_post(post_obj, db_client).await;
-    Ok(HttpResponse::Ok().content_type(ContentType::plaintext()).body("Inserted new post"))
+    Ok(HttpResponse::Ok().content_type(ContentType::plaintext()).body("Sent request to server"))
 }
 
 #[actix_web::main]
