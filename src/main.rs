@@ -38,5 +38,5 @@ async fn insert_new_post(mut payload: web::Payload) -> Result<HttpResponse, erro
 async fn main() -> std::io::Result<()>{
     HttpServer::new(|| {
         App::new().service(web::scope("/api").service(get_posts).service(insert_new_post)).service(fs::Files::new("/", "static").index_file("index.html"))
-    }).bind(("127.0.0.1", 8080))?.run().await
+    }).bind(("0.0.0.0", 8080))?.run().await
 }
