@@ -1,24 +1,28 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-	<head>
-		<title>Sammy Shear</title>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.2/dist/terminal.min.css" />
-		<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-		<script src="https://unpkg.com/htmx.org@1.9.9" integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX" crossorigin="anonymous"></script>
-		<script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
-		<script type="application/javascript">
-			let data = { posts: [{}] };
-			let reactivePosts;
-			document.addEventListener("alpine:init", () => {
-				reactivePosts = Alpine.reactive(data);
-			});
-		</script>
-	</head>
-	<body class="terminal">
-		<header class="container">
-			<hgroup x-data="{
+
+<head>
+	<title>Sammy Shear</title>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.2/dist/terminal.min.css" />
+	<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+	<script src="https://unpkg.com/htmx.org@1.9.9"
+		integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
+		crossorigin="anonymous"></script>
+	<script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+	<script type="application/javascript">
+		let data = {posts: [{}]};
+		let reactivePosts;
+		document.addEventListener("alpine:init", () => {
+			reactivePosts = Alpine.reactive(data);
+		});
+	</script>
+</head>
+
+<body class="terminal">
+	<header class="container">
+		<hgroup x-data="{
 			text: '',
 			textArray : ['Sammy Shear', 'Developer', 'Blogger'],
 			textIndex: 0,
@@ -27,8 +31,7 @@
 			pauseStart: 20,
 			typeSpeed: 125,
 			direction: 'forward'
-                }" 
-x-init="(() => {
+                }" x-init="(() => {
 	let typingInterval = setInterval(type, $data.typeSpeed);
 
 	function type() {
@@ -60,54 +63,77 @@ x-init="(() => {
 			$data.charIndex--;
 		}
 	}
-})();"
-				class="typer">
-				<h1>sshear@dev</h1>
-				<h1 class="logo terminal-prompt" x-text="text"></h1>
-			</hgroup>
-			<nav class="terminal-menu">
-				<ul>
-					<li>
-						<a href="#" class="menu-item active">Blog</a>
-					</li>
-					<li>
-						<a href="#portfolio" class="menu-item">Portfolio</a>
-					</li>
-				</ul>
-			</nav>
-		</header>
-		<main class="container">
-			<section x-data x-on:htmx:after-swap="reactivePosts.posts = JSON.parse($event.detail.xhr.response)" hx-get="/api/posts" hx-trigger="load" hx-swap="none" id="postSection" class="card-grid">
-				<template x-for="post in reactivePosts.posts" :key="post.id">
-					<div class="terminal-card">
-						<header x-text="post.title" style=""></header>
-						<div>
-							<span x-text="post.body_prev"></span> <a href="#" @click="reactivePosts.curPost = post.id; reactivePosts.open = !reactivePosts.open">Read more...</a>
-							<template x-if="reactivePosts.curPost === post.id && reactivePosts.open">
-								<pre x-text="post.body"></pre>
-							</template>
-						</div>
+})();" class="typer">
+			<h1>sshear@dev</h1>
+			<h1 class="logo terminal-prompt" x-text="text"></h1>
+		</hgroup>
+		<nav class="terminal-menu">
+			<ul>
+				<li>
+					<a href="#" class="menu-item active">Blog</a>
+				</li>
+				<li>
+					<a href="#portfolio" class="menu-item">Portfolio</a>
+				</li>
+			</ul>
+		</nav>
+	</header>
+	<main class="container">
+		<section x-data x-on:htmx:after-swap="reactivePosts.posts = JSON.parse($event.detail.xhr.response)"
+			hx-get="/api/posts" hx-trigger="load" hx-swap="none" id="postSection" class="card-grid">
+			<template x-for="post in reactivePosts.posts" :key="post.id">
+				<div class="terminal-card">
+					<header x-text="post.title" style=""></header>
+					<div>
+						<span x-text="post.body_prev"></span>
+						<a href="#"
+							@click="reactivePosts.curPost = post.id; reactivePosts.open = !reactivePosts.open">Read
+							more...</a>
+						<template
+							x-if="reactivePosts.curPost === post.id && reactivePosts.open">
+							<pre x-text="post.body"></pre>
+						</template>
 					</div>
-				</template>
-			</section>
-		</main>
-
-		<br>
-		<br>
-
-		<section id="portfolio" class="container terminal-timeline">
-			<div class="terminal-card">
-				<header>This Site</header>
-				<div>Stack: HTMX + AlpineJS + Rust + Actix-Web. <a href="https://github.com/sammyshear/sshear-dev">GitHub</a></div>
-			</div>
-			<div class="terminal-card">
-				<header>Waypoints for Homes</header>
-				<div>Minecraft plugin and mod combo written in Java for paper and fabric. <a href="https://github.com/sammyshear/waypoints4homes">GitHub</a></div>
-			</div>
-			<div class="terminal-card">
-				<header>Dev.to Old Blog Posts</header>
-				<div>Assorted posts on dev.to, some with GitHub links to another account I used with it. <a href="dev.to/sammyshear">Link</a></div>
-			</div>
+				</div>
+			</template>
 		</section>
-	</body>
+	</main>
+
+	<br />
+	<br />
+
+	<section id="portfolio" class="container terminal-timeline">
+		<div class="terminal-card">
+			<header>This Site</header>
+			<div>
+				Stack: HTMX + AlpineJS + Rust + Actix-Web.
+				<a href="https://github.com/sammyshear/sshear-dev">GitHub</a>
+			</div>
+		</div>
+		<div class="terminal-card">
+			<header>Waypoints for Homes</header>
+			<div>
+				Minecraft plugin and mod combo written in Java for paper and fabric.
+				<a href="https://github.com/sammyshear/waypoints4homes">GitHub</a>
+			</div>
+		</div>
+		<div class="terminal-card">
+			<header>Bridge App</header>
+			<div>
+				An online multiplayer bridge app implemented using Socket.IO and
+				VueJS.
+				<a href="https://bridge.sshear.dev">Game</a>
+				<a href="https://github.com/sammyshear/bridge-app">GitHub</a>
+			</div>
+		</div>
+		<div class="terminal-card">
+			<header>Dev.to Old Blog Posts</header>
+			<div>
+				Assorted posts on dev.to, some with GitHub links to another account I
+				used with it. <a href="dev.to/sammyshear">Link</a>
+			</div>
+		</div>
+	</section>
+</body>
+
 </html>
