@@ -5,7 +5,9 @@
 	<title>Sammy Shear</title>
 	<meta charset="UTF-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="https://unpkg.com/@highlightjs/cdn-assets@11.9.0/styles/default.min.css" />
 	<link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.2/dist/terminal.min.css" />
+	<script src="https://unpkg.com/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script>
 	<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 	<script src="https://unpkg.com/htmx.org@1.9.9"
 		integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
@@ -18,6 +20,42 @@
 		document.addEventListener("alpine:init", () => {
 			reactivePosts = Alpine.reactive(data);
 		});
+		showdown.extension("highlight", function () {
+			function htmlunencode(text) {
+				return text
+					.replace(/&amp;/g, "&")
+					.replace(/&lt;/g, "<")
+					.replace(/&gt;/g, ">");
+			}
+			return [
+				{
+					type: "output",
+					filter: function (text, converter, options) {
+						var left = "<pre><code\\b[^>]*>",
+							right = "</code></pre>",
+							flags = "g";
+						var replacement = function (wholeMatch, match, left, right) {
+							var lang = (left.match(/class=\"([^ \"]+)/) || [])[1];
+							left = left.slice(0, 18) + "hljs " + left.slice(18);
+							match = htmlunencode(match);
+							if (lang && hljs.getLanguage(lang)) {
+								return left + hljs.highlight(lang, match).value + right;
+							} else {
+								return left + hljs.highlightAuto(match).value + right;
+							}
+						};
+						return showdown.helper.replaceRecursiveRegExp(
+							text,
+							replacement,
+							left,
+							right,
+							flags,
+						);
+					},
+				},
+			];
+		});
+		let converter = new showdown.Converter({extensions: ["highlight"]});
 	</script>
 </head>
 
@@ -92,8 +130,7 @@
 							more...</a>
 						<template
 							x-if="reactivePosts.curPost === post.id && reactivePosts.open">
-							<pre x-init="post.bodyHtml = new showdown.Converter().makeHtml(post.body)"
-								x-html="post.bodyHtml"></pre>
+							<pre x-html="converter.makeHtml(post.body)"></pre>
 						</template>
 					</div>
 				</div>
