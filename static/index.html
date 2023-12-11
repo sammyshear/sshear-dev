@@ -11,6 +11,7 @@
 		integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
 		crossorigin="anonymous"></script>
 	<script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+	<script src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
 	<script type="application/javascript">
 		let data = {posts: [{}]};
 		let reactivePosts;
@@ -91,7 +92,8 @@
 							more...</a>
 						<template
 							x-if="reactivePosts.curPost === post.id && reactivePosts.open">
-							<pre x-text="post.body"></pre>
+							<pre x-init="post.bodyHtml = new showdown.Converter().makeHtml(post.body)"
+								x-html="post.bodyHtml"></pre>
 						</template>
 					</div>
 				</div>
