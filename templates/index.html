@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block scripts %}
+<script type="application/javascript">
+	let data = {posts: [{}]};
+	let reactivePosts;
+	document.addEventListener("alpine:init", () => {
+		reactivePosts = Alpine.reactive(data);
+	});
+	showdown.extension("highlight", function () {
+		function htmlunencode(text) {
+			return text
+				.replace(/&amp;/g, "&")
+				.replace(/&lt;/g, "<")
+				.replace(/&gt;/g, ">");
+		}
+		return [
+			{
+				type: "output",
+				filter: function (text, converter, options) {
+					var left = "<pre><code\\b[^>]*>",
+						right = "</code></pre>",
+						flags = "g";
+					var replacement = function (wholeMatch, match, left, right) {
+						var lang = (left.match(/class=\"([^ \"]+)/) || [])[1];
+						left = left.slice(0, 18) + "hljs " + left.slice(18);
+						match = htmlunencode(match);
+						if (lang && hljs.getLanguage(lang)) {
+							return left + hljs.highlight(lang, match).value + right;
+						} else {
+							return left + hljs.highlightAuto(match).value + right;
+						}
+					};
+					return showdown.helper.replaceRecursiveRegExp(
+						text,
+						replacement,
+						left,
+						right,
+						flags,
+					);
+				},
+			},
+		];
+	});
+	let converter = new showdown.Converter({extensions: ["highlight"]});
+</script>
+{% endblock scripts %}
+
+{% block content %}
+<header class="container">
+	<hgroup x-data="{
+			text: '',
+			textArray : ['Sammy Shear', 'Developer', 'Blogger'],
+			textIndex: 0,
+			charIndex: 0,
+			pauseEnd: 1000,
+			pauseStart: 20,
+			typeSpeed: 125,
+			direction: 'forward'
+                }" x-init="(() => {
+	let typingInterval = setInterval(type, $data.typeSpeed);
+
+	function type() {
+		let current = $data.textArray[$data.textIndex];
+		if ($data.charIndex > current.length) {
+			$data.direction = 'backward';
+			clearInterval(typingInterval);
+			setTimeout(function() {
+				typingInterval = setInterval(type, $data.typeSpeed);
+			}, $data.pauseEnd);
+		}
+
+		$data.text = current.substring(0, $data.charIndex);
+		if ($data.direction == 'forward') {
+			$data.charIndex++;
+		} else {
+			if ($data.charIndex == 0) {
+				$data.direction = 'forward';
+				clearInterval(typingInterval);
+				setTimeout(function() {
+					$data.textIndex++;
+					if ($data.textIndex >= $data.textArray.length) {
+						$data.textIndex = 0;
+					}
+
+					typingInterval = setInterval(type, $data.typeSpeed);
+				}, $data.pauseStart);
+			}
+			$data.charIndex--;
+		}
+	}
+})();" class="typer">
+		<h1>sshear@dev</h1>
+		<h1 class="logo terminal-prompt" x-text="text"></h1>
+	</hgroup>
+	<nav class="terminal-menu">
+		<ul>
+			<li>
+				<a href="#" class="menu-item active">Blog</a>
+			</li>
+			<li>
+				<a href="#portfolio" class="menu-item">Portfolio</a>
+			</li>
+		</ul>
+	</nav>
+</header>
+<main class="container">
+	<section x-data x-on:htmx:after-swap="reactivePosts.posts = JSON.parse($event.detail.xhr.response)"
+		hx-get="/api/posts" hx-trigger="load" hx-swap="none" id="postSection" class="card-grid">
+		<template x-for="post in reactivePosts.posts" :key="post.id">
+			<div class="terminal-card">
+				<header x-text="post.title" style=""></header>
+				<div>
+					<span x-text="post.body_prev"></span>
+					<a href="#"
+						@click="reactivePosts.curPost = post.id; reactivePosts.open = !reactivePosts.open">Read
+						more...</a>
+					<template x-if="reactivePosts.curPost === post.id && reactivePosts.open">
+						<pre x-html="converter.makeHtml(post.body)"></pre>
+					</template>
+				</div>
+			</div>
+		</template>
+	</section>
+</main>
+
+<br />
+<br />
+
+<section id="portfolio" class="container terminal-timeline">
+	<div class="terminal-card">
+		<header>This Site</header>
+		<div>
+			Stack: HTMX + AlpineJS + Rust + Actix-Web.
+			<a href="https://github.com/sammyshear/sshear-dev">GitHub</a>
+		</div>
+	</div>
+	<div class="terminal-card">
+		<header>Waypoints for Homes</header>
+		<div>
+			Minecraft plugin and mod combo written in Java for paper and fabric.
+			<a href="https://github.com/sammyshear/waypoints4homes">GitHub</a>
+		</div>
+	</div>
+	<div class="terminal-card">
+		<header>Bridge App</header>
+		<div>
+			An online multiplayer bridge app implemented using Socket.IO and VueJS.
+			<a href="https://bridge.sshear.dev">Game</a>
+			<a href="https://github.com/sammyshear/bridge-app">GitHub</a>
+		</div>
+	</div>
+	<div class="terminal-card">
+		<header>Dev.to Old Blog Posts</header>
+		<div>
+			Assorted posts on dev.to, some with GitHub links to another account I used
+			with it. <a href="dev.to/sammyshear">Link</a>
+		</div>
+	</div>
+</section>
+{% endblock content %}

@@ -1,8 +1,13 @@
 mod db;
 
-use actix_web::{get, HttpServer, App, web, HttpResponse, Responder, http::header::ContentType, post, error};
+use std::ops::Deref;
+
 use actix_files as fs;
-use db::db::{query_posts, Post, insert_post, PostPayload};
+use actix_web::{
+    error, get, http::header::ContentType, post, web, App, HttpResponse, HttpServer, Responder,
+};
+use askama::Template;
+use db::db::{insert_post, query_posts, Post, PostPayload};
 use futures::StreamExt;
 
 const MAX_SIZE: usize = 262_144;
@@ -13,7 +18,9 @@ async fn get_posts() -> impl Responder {
     let db_client = client.unwrap();
     let posts: Vec<Post> = query_posts(db_client).await;
 
-    HttpResponse::Ok().content_type(ContentType::json()).json(posts)
+    HttpResponse::Ok()
+        .content_type(ContentType::json())
+        .json(posts)
 }
 
 #[post("/posts/new")]
@@ -31,12 +38,67 @@ async fn insert_new_post(mut payload: web::Payload) -> Result<HttpResponse, erro
     }
     let post_obj = serde_json::from_slice::<PostPayload>(&body).unwrap();
     insert_post(post_obj, db_client).await;
-    Ok(HttpResponse::Ok().content_type(ContentType::plaintext()).body("Sent request to server"))
+    Ok(HttpResponse::Ok()
+        .content_type(ContentType::plaintext())
+        .body("Sent request to server"))
+}
+
+#[derive(Template)]
+#[template(path = "base.html")]
+struct BaseTemplate<'a> {
+    title: &'a str,
+}
+
+#[derive(Template)]
+#[template(path = "index.html")]
+struct IndexTemplate<'a> {
+    _parent: &'a BaseTemplate<'a>,
+}
+
+#[derive(Template)]
+#[template(path = "private.html")]
+struct PrivateTemplate<'a> {
+    _parent: &'a BaseTemplate<'a>,
+}
+
+impl<'a> Deref for IndexTemplate<'a> {
+    type Target = BaseTemplate<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        self._parent
+    }
+}
+impl<'a> Deref for PrivateTemplate<'a> {
+    type Target = BaseTemplate<'a>;
+
+    fn deref(&self) -> &Self::Target {
+        self._parent
+    }
 }
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()>{
+async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
-        App::new().service(web::scope("/api").service(get_posts).service(insert_new_post)).service(fs::Files::new("/", "static").index_file("index.html"))
-    }).bind(("0.0.0.0", 8080))?.run().await
+        App::new()
+            .service(
+                web::scope("/api")
+                    .service(get_posts)
+                    .service(insert_new_post),
+            )
+            .service(web::resource("/").to(|| async {
+                IndexTemplate {
+                    _parent: &BaseTemplate {
+                        title: "Sammy Shear",
+                    },
+                }
+            }))
+            .service(web::resource("/private").to(|| async {
+                PrivateTemplate {
+                    _parent: &BaseTemplate { title: "New Post" },
+                }
+            }))
+    })
+    .bind(("0.0.0.0", 8080))?
+    .run()
+    .await
 }

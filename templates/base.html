@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<title>{{title}}</title>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<link rel="stylesheet" href="https://unpkg.com/@highlightjs/cdn-assets@11.9.0/styles/default.min.css" />
+	<link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.2/dist/terminal.min.css" />
+	<script src="https://unpkg.com/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script>
+	<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+	<script src="https://unpkg.com/htmx.org@1.9.9"
+		integrity="sha384-QFjmbokDn2DjBjq+fM+8LUIVrAgqcNW2s0PjAxHETgRn9l4fvX31ZxDxvwQnyMOX"
+		crossorigin="anonymous"></script>
+	<script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+	<script src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
+	{% block scripts %}{% endblock %}
+</head>
+
+<body class="terminal">
+	{% block content %}{% endblock %}
+</body>
+
+</html>

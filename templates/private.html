@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<form hx-post="/api/posts/new" hx-ext="json-enc">
+	<input type="text" name="title" placeholder="Title" />
+	<input type="text" name="body_prev" placeholder="Blurb" />
+	<textarea rows="20" cols="20" name="body" placeholder="Body"></textarea>
+	<input type="text" name="auth_key" placeholder="Auth Key" />
+	<input type="submit" value="Post" />
+</form>
+{% endblock content %}
