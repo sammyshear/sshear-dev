@@ -1,8 +1,7 @@
 mod db;
 
-use std::ops::Deref;
+use std::{ops::Deref, sync::Mutex};
 
-use actix_files as fs;
 use actix_web::{
     error, get, http::header::ContentType, post, web, App, HttpResponse, HttpServer, Responder,
 };
@@ -68,6 +67,7 @@ impl<'a> Deref for IndexTemplate<'a> {
         self._parent
     }
 }
+
 impl<'a> Deref for PrivateTemplate<'a> {
     type Target = BaseTemplate<'a>;
 
@@ -78,7 +78,7 @@ impl<'a> Deref for PrivateTemplate<'a> {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| {
+    HttpServer::new(move || {
         App::new()
             .service(
                 web::scope("/api")

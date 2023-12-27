@@ -76,9 +76,9 @@ pub mod db {
     #[derive(Serialize, Deserialize, Debug)]
     pub struct Post {
         id: i64,
-        title: Box<str>,
-        body_prev: Box<str>,
-        body: Box<str>,
+        pub title: Box<str>,
+        pub body_prev: Box<str>,
+        pub body: Box<str>,
         created_at: i64
     }
     #[derive(Deserialize, Serialize, Debug)]
