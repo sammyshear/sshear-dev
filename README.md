@@ -1,6 +1,6 @@
-# Migrating To Astro
+# Migrating To Hugo
 
-While I want to keep this repo open as something I made, I have decided to make my life a little easier for future blogging by migrating my actual site to Astro and Decap CMS. While I still think it was a good experience creating this from scratch (well, with the help of some very good libraries, of course), I think it's just not practical to continue using this setup for a blog.
+While I want to keep this repo open as something I made, I have decided to make my life a little easier for future blogging by migrating my actual site to Hugo and Decap CMS. While I still think it was a good experience creating this from scratch (well, with the help of some very good libraries, of course), I think it's just not practical to continue using this setup for a blog.
 
 sshear.dev
 ==========
